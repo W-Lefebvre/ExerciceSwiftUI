@@ -76,6 +76,16 @@ struct PlayerList: View {
                     Image(systemName: "arrowtriangle.down.fill")
                         .imageScale(.small)
                 }
+        
+            })
+        case .byTeamName:
+            return Button(action: viewModel.toggleOrdering, label: {
+                HStack {
+                    Text("Team")
+                    Image(systemName: "arrowtriangle.down.fill")
+                        .imageScale(.small)
+                }
+        
             })
         }
     }
@@ -119,6 +129,8 @@ struct PlayerRow: View {
             Text(player.name)
             Spacer()
             Text("\(player.score) points").foregroundColor(.gray)
+            Spacer()
+            Text("\(player.teamName)").foregroundColor(.gray)
         }
     }
 }

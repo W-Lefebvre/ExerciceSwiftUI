@@ -9,17 +9,21 @@ final class PlayerFormViewModel: ObservableObject {
     /// the database.
     enum ValidationError: LocalizedError {
         case missingName
+        case missingTeamName
         
         var errorDescription: String? {
             switch self {
             case .missingName:
                 return "Please give a name to this player."
+            case .missingTeamName:
+                return "Please give a name to this team."
             }
         }
     }
     
     @Published var name: String = ""
     @Published var score: String = ""
+    @Published var teamName: String = ""
     
     private let database: AppDatabase
     private var player: Player
@@ -37,7 +41,11 @@ final class PlayerFormViewModel: ObservableObject {
         if name.isEmpty {
             throw ValidationError.missingName
         }
+        if teamName.isEmpty {
+            throw ValidationError.missingTeamName
+        }
         player.name = name
+        player.teamName = teamName
         player.score = Int(score) ?? 0
         try database.savePlayer(&player)
     }
@@ -57,6 +65,7 @@ final class PlayerFormViewModel: ObservableObject {
     
     private func updateViewFromPlayer() {
         self.name = player.name
+        self.teamName = player.teamName
         if player.score == 0 && player.id == nil {
             // Avoid displaying "0" for a new player: it does not look good.
             self.score = ""

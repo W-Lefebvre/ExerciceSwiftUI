@@ -10,6 +10,7 @@ struct PlayerForm: View {
         List {
             TextField("Name", text: $viewModel.name)
             TextField("Score", text: $viewModel.score)
+            TextField("Team", text: $viewModel.teamName)
                 .keyboardType(.numberPad)
         }
         .listStyle(GroupedListStyle())

@@ -32,6 +32,7 @@ struct AppDatabase {
             try db.create(table: "player") { t in
                 t.autoIncrementedPrimaryKey("id")
                 t.column("name", .text).notNull()
+                t.column("teamName", .text).notNull()
                     // Sort player names in a localized case insensitive fashion by default
                     // See https://github.com/groue/GRDB.swift/blob/master/README.md#unicode
                     .collate(.localizedCaseInsensitiveCompare)
@@ -96,6 +97,7 @@ extension AppDatabase {
                 for var player in try Player.fetchAll(db) where Bool.random() {
                     try player.updateChanges(db) {
                         $0.score = Player.randomScore()
+                        $0.teamName = Player.randomTeamName()
                     }
                 }
             }
@@ -125,6 +127,14 @@ extension AppDatabase {
     func playersOrderedByNamePublisher() -> AnyPublisher<[Player], Error> {
         ValueObservation
             .tracking(Player.all().orderedByName().fetchAll)
+            .publisher(in: dbWriter)
+            .eraseToAnyPublisher()
+    }
+    
+    /// Returns a publisher that tracks changes in players ordered by teams
+    func playersOrderedByTeamNamePublisher() -> AnyPublisher<[Player], Error> {
+        ValueObservation
+            .tracking(Player.all().orderedByTeamName().fetchAll)
             .publisher(in: dbWriter)
             .eraseToAnyPublisher()
     }

@@ -7,6 +7,7 @@ final class PlayerListViewModel: ObservableObject {
     enum Ordering {
         case byScore
         case byName
+        case byTeamName
     }
     
     struct PlayerList {
@@ -16,7 +17,8 @@ final class PlayerListViewModel: ObservableObject {
     
     /// The list ordering
     @Published var ordering: Ordering = .byScore
-    
+    @Published var teamOrdering: Ordering = .byTeamName
+        
     /// The players in the list
     @Published var playerList = PlayerList(players: [], animatedChanges: false)
     
@@ -30,7 +32,7 @@ final class PlayerListViewModel: ObservableObject {
         self.database = database
         newPlayerViewModel = PlayerFormViewModel(database: database, player: .new())
         playersCancellable = playersPublisher(in: database)
-            .scan(nil) { (previousList: PlayerList?, players: [Player]) in
+            .scan(nil) { (previousList: PlayerList?, players: [Player] ) in
                 if previousList == nil {
                     // Do not animate first view update
                     return PlayerList(players: players, animatedChanges: false)
@@ -79,9 +81,11 @@ final class PlayerListViewModel: ObservableObject {
     func toggleOrdering() {
         switch ordering {
         case .byName:
-            ordering = .byScore
+            ordering = .byTeamName
         case .byScore:
             ordering = .byName
+        case .byTeamName:
+            ordering = .byScore
         }
     }
     
@@ -103,6 +107,8 @@ final class PlayerListViewModel: ObservableObject {
                 return database.playersOrderedByScorePublisher()
             case .byName:
                 return database.playersOrderedByNamePublisher()
+            case .byTeamName:
+                return database.playersOrderedByTeamNamePublisher()
             }
         }
         .map { playersPublisher in
