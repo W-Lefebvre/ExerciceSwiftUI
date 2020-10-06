@@ -113,8 +113,23 @@ extension AppDatabase {
         }
     }
     
+    func createRandomTeamsIfEmpty() throws {
+        try dbWriter.write { db in
+            if try Player.fetchCount(db) == 0 {
+                try createRandomTeams(db)
+            }
+        }
+    }
+    
     /// Support for `createRandomPlayersIfEmpty()` and `refreshPlayers()`.
     private func createRandomPlayers(_ db: Database) throws {
+        for _ in 0..<8 {
+            var player = Player.newRandom()
+            try player.insert(db)
+        }
+    }
+    
+    private func createRandomTeams(_ db: Database) throws {
         for _ in 0..<8 {
             var player = Player.newRandom()
             try player.insert(db)

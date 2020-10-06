@@ -130,10 +130,11 @@ struct PlayerRow: View {
             Spacer()
             Text("\(player.score) points").foregroundColor(.gray)
             Spacer()
-            Text("\(player.teamName)").foregroundColor(.gray)
+            Text(player.teamName)
         }
     }
 }
+
 
 struct PlayerListView_Previews: PreviewProvider {
     static var previews: some View {

@@ -45,7 +45,6 @@ final class PlayerFormViewModel: ObservableObject {
             throw ValidationError.missingTeamName
         }
         player.name = name
-        player.teamName = teamName
         player.score = Int(score) ?? 0
         try database.savePlayer(&player)
     }
@@ -65,7 +64,6 @@ final class PlayerFormViewModel: ObservableObject {
     
     private func updateViewFromPlayer() {
         self.name = player.name
-        self.teamName = player.teamName
         if player.score == 0 && player.id == nil {
             // Avoid displaying "0" for a new player: it does not look good.
             self.score = ""

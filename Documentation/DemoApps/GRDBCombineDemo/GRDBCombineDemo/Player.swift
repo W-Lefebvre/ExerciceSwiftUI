@@ -32,7 +32,7 @@ extension Player {
     
     /// Creates a new player with random name and random score
     static func newRandom() -> Player {
-        Player(id: nil, name: randomName(), score: randomScore(), teamName: "")
+        Player(id: nil, name: randomName(), score: randomScore(), teamName: randomTeamName())
     }
     
     /// Returns a random name
@@ -46,7 +46,12 @@ extension Player {
     }
 }
 
-extension Player {
+struct Team: Identifiable {
+    var id: Int64?
+    var teamName: String
+}
+
+extension Player   {
     private static let teamNames = [
         "Rome", "Berlin", "Bruxelles", "Gand", "Madrid", "Barcelone", "Pescara",
         "Mons", "London", "Paris", "Dublin", "Nantes", "Lille", "Marseille",
@@ -57,17 +62,7 @@ extension Player {
         "Fes", "Charleroi", "Chelsea", "Totthenam", "Hollywood", "Brest",
         "Montpellier", "Cannes"]
     
-    /// Creates a new team with empty name
-    static func newTeam() -> Player {
-        Player(id: nil, name:"", score: 0, teamName: "")
-    }
-    
-    /// Creates a new player with random name and random score
-    static func newRandomTeam() -> Player {
-        Player(id: nil, name:"", score: 0, teamName: randomTeamName())
-    }
-    
-    /// Returns a random name
+    /// Returns a random team name
     static func randomTeamName() -> String {
         teamNames.randomElement()!
     }
@@ -122,6 +117,7 @@ extension DerivableRequest where RowDecoder == Player {
     }
     
     func orderedByTeamName() -> Self {
-        order(Player.Columns.teamName, Player.Columns.score.desc, Player.Columns.name)
+        order(Player.Columns.teamName)
     }
 }
+
