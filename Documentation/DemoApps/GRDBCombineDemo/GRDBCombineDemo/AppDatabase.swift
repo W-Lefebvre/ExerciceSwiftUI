@@ -32,11 +32,21 @@ struct AppDatabase {
             try db.create(table: "player") { t in
                 t.autoIncrementedPrimaryKey("id")
                 t.column("name", .text).notNull()
-                t.column("teamName", .text).notNull()
-                    // Sort player names in a localized case insensitive fashion by default
-                    // See https://github.com/groue/GRDB.swift/blob/master/README.md#unicode
-                    .collate(.localizedCaseInsensitiveCompare)
                 t.column("score", .integer).notNull()
+                t.column("teamId", .integer)
+                    .notNull()
+                    .indexed()
+                    .references("team", onDelete: .cascade)
+            }
+        }
+        
+        migrator.registerMigration("createTeam") { db in
+            // Create a table
+            try db.create(table: "team") { t in
+                t.autoIncrementedPrimaryKey("id")
+                t.column("teamName", .text).notNull()
+                    .collate(.localizedCaseInsensitiveCompare)
+                t.column("firstTeamDate", .text).notNull()
             }
         }
         
@@ -63,6 +73,12 @@ extension AppDatabase {
         }
     }
     
+    func saveTeam(_ team: inout Team) throws {
+        try dbWriter.write { db in
+            try team.save(db)
+        }
+    }
+    
     /// Delete the specified players
     func deletePlayers(ids: [Int64]) throws {
         try dbWriter.write { db in
@@ -70,10 +86,22 @@ extension AppDatabase {
         }
     }
     
+    func deleteTeams(ids: [Int64]) throws {
+        try dbWriter.write { db in
+            _ = try Team.deleteAll(db, keys: ids)
+        }
+    }
+    
     /// Delete all players
     func deleteAllPlayers() throws {
         try dbWriter.write { db in
             _ = try Player.deleteAll(db)
+        }
+    }
+    
+    func deleteAllTeams() throws {
+        try dbWriter.write { db in
+            _ = try Team.deleteAll(db)
         }
     }
     
@@ -97,7 +125,31 @@ extension AppDatabase {
                 for var player in try Player.fetchAll(db) where Bool.random() {
                     try player.updateChanges(db) {
                         $0.score = Player.randomScore()
-                        $0.teamName = Player.randomTeamName()
+                    }
+                }
+            }
+        }
+    }
+    
+    func refreshTeams() throws {
+        try dbWriter.write { db in
+            if try Team.fetchCount(db) == 0 {
+                // Insert new random players
+                try createRandomTeams(db)
+            } else {
+                // Insert a player
+                if Bool.random() {
+                    var team = Team.newRandomTeam()
+                    try team.insert(db)
+                }
+                // Delete a random player
+                if Bool.random() {
+                    try Team.order(sql: "RANDOM()").limit(1).deleteAll(db)
+                }
+                // Update some players
+                for var team in try Team.fetchAll(db) where Bool.random() {
+                    try team.updateChanges(db) {
+                        $0.teamName = Team.randomTeamName()
                     }
                 }
             }
@@ -115,8 +167,8 @@ extension AppDatabase {
     
     func createRandomTeamsIfEmpty() throws {
         try dbWriter.write { db in
-            if try Player.fetchCount(db) == 0 {
-                try createRandomTeams(db)
+            if try Team.fetchCount(db) == 0 {
+                try createRandomPlayers(db)
             }
         }
     }
@@ -131,11 +183,10 @@ extension AppDatabase {
     
     private func createRandomTeams(_ db: Database) throws {
         for _ in 0..<8 {
-            var player = Player.newRandom()
-            try player.insert(db)
+            var team = Team.newRandomTeam()
+            try team.insert(db)
         }
     }
-    
     // MARK: Reads
     
     /// Returns a publisher that tracks changes in players ordered by name

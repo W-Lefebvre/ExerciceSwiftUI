@@ -19,7 +19,8 @@ struct PlayerEditionView_Previews: PreviewProvider {
     static var previews: some View {
         let viewModel = PlayerFormViewModel(
             database: .empty(),
-            player: .newRandom())
+            player: .newRandom(),
+            team: .newRandomTeam())
         
         return NavigationView {
             PlayerEditionView(viewModel: viewModel)

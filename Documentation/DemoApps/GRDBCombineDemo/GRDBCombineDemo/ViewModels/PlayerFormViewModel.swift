@@ -27,10 +27,12 @@ final class PlayerFormViewModel: ObservableObject {
     
     private let database: AppDatabase
     private var player: Player
+    private var team: Team
     
-    init(database: AppDatabase, player: Player) {
+    init(database: AppDatabase, player: Player, team: Team) {
         self.database = database
         self.player = player
+        self.team = team
         updateViewFromPlayer()
     }
     
@@ -64,6 +66,7 @@ final class PlayerFormViewModel: ObservableObject {
     
     private func updateViewFromPlayer() {
         self.name = player.name
+        self.teamName = team.teamName
         if player.score == 0 && player.id == nil {
             // Avoid displaying "0" for a new player: it does not look good.
             self.score = ""

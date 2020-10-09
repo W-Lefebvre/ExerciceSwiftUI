@@ -11,10 +11,10 @@ struct Player: Identifiable {
     var id: Int64?
     var name: String
     var score: Int
-    var teamName: String
+    var teamId: Int64?
 }
 
-extension Player {
+extension Player: TableRecord {
     private static let names = [
         "Arthur", "Anita", "Barbara", "Bernard", "Craig", "Chiara", "David",
         "Dean", "Éric", "Elena", "Fatima", "Frederik", "Gilbert", "Georgette",
@@ -25,14 +25,16 @@ extension Player {
         "Victor", "Violette", "Wilfried", "Wilhelmina", "Yvon", "Yann",
         "Zazie", "Zoé"]
     
+    static let team = belongsTo(Team.self)
+    
     /// Creates a new player with empty name and zero score
     static func new() -> Player {
-        Player(id: nil, name: "", score: 0, teamName: "")
+        Player(id: nil, name: "", score: 0, teamId: nil)
     }
     
     /// Creates a new player with random name and random score
     static func newRandom() -> Player {
-        Player(id: nil, name: randomName(), score: randomScore(), teamName: randomTeamName())
+        Player(id: nil, name: randomName(), score: randomScore(), teamId: nil)
     }
     
     /// Returns a random name
@@ -49,9 +51,10 @@ extension Player {
 struct Team: Identifiable {
     var id: Int64?
     var teamName: String
+    var teamDate: String
 }
 
-extension Player   {
+extension Team: TableRecord   {
     private static let teamNames = [
         "Rome", "Berlin", "Bruxelles", "Gand", "Madrid", "Barcelone", "Pescara",
         "Mons", "London", "Paris", "Dublin", "Nantes", "Lille", "Marseille",
@@ -62,12 +65,27 @@ extension Player   {
         "Fes", "Charleroi", "Chelsea", "Totthenam", "Hollywood", "Brest",
         "Montpellier", "Cannes"]
     
+    static func newTeam() -> Team {
+        Team(id: nil, teamName: "", teamDate: "")
+    }
     /// Returns a random team name
     static func randomTeamName() -> String {
         teamNames.randomElement()!
     }
+    
+    static func newRandomTeam() -> Team {
+        Team(id: nil, teamName: "", teamDate: "")
+    }
 }
 
+struct PlayerInfo: FetchableRecord, Decodable {
+    let player: Player
+    let team: Team
+}
+
+extension PlayerInfo: TableRecord {
+    
+}
 // MARK: - Persistence
 
 /// Make Player a Codable Record.
@@ -78,7 +96,6 @@ extension Player: Codable, FetchableRecord, MutablePersistableRecord {
     fileprivate enum Columns {
         static let name = Column(CodingKeys.name)
         static let score = Column(CodingKeys.score)
-        static let teamName = Column(CodingKeys.teamName)
     }
     
     /// Updates a player id after it has been inserted in the database.
@@ -87,6 +104,18 @@ extension Player: Codable, FetchableRecord, MutablePersistableRecord {
     }
 }
 
+extension Team: Codable, FetchableRecord, MutablePersistableRecord {
+    // Define database columns from CodingKeys
+    fileprivate enum Columns {
+        static let teamName = Column(CodingKeys.teamName)
+        static let teamDate = Column(CodingKeys.teamDate)
+    }
+    
+    /// Updates a player id after it has been inserted in the database.
+    mutating func didInsert(with rowID: Int64, for column: String?) {
+        id = rowID
+    }
+}
 // MARK: - Player Database Requests
 
 /// Define some player requests used by the application.
@@ -117,7 +146,12 @@ extension DerivableRequest where RowDecoder == Player {
     }
     
     func orderedByTeamName() -> Self {
-        order(Player.Columns.teamName)
+        order(Team.Columns.teamName)
     }
 }
 
+extension DerivableRequest where RowDecoder == Team {
+    func orderedByTeamName() -> Self {
+        order(Team.Columns.teamName)
+    }
+}

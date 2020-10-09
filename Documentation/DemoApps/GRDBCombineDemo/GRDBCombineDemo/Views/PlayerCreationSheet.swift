@@ -43,7 +43,8 @@ struct PlayerCreationSheet_Previews: PreviewProvider {
     static var previews: some View {
         let viewModel = PlayerFormViewModel(
             database: .empty(),
-            player: .new())
+            player: .new(),
+            team: .newTeam())
         
         return PlayerCreationSheet(
             viewModel: viewModel,

@@ -12,6 +12,7 @@ final class PlayerListViewModel: ObservableObject {
     
     struct PlayerList {
         var players: [Player]
+        var teams: [Team]
         var animatedChanges: Bool
     }
     
@@ -20,7 +21,7 @@ final class PlayerListViewModel: ObservableObject {
     @Published var teamOrdering: Ordering = .byTeamName
         
     /// The players in the list
-    @Published var playerList = PlayerList(players: [], animatedChanges: false)
+    @Published var playerList = PlayerList(players: [], teams: [], animatedChanges: false)
     
     /// The view model that edits a new player
     let newPlayerViewModel: PlayerFormViewModel
@@ -30,14 +31,14 @@ final class PlayerListViewModel: ObservableObject {
     
     init(database: AppDatabase) {
         self.database = database
-        newPlayerViewModel = PlayerFormViewModel(database: database, player: .new())
+        newPlayerViewModel = PlayerFormViewModel(database: database, player: .new(), team: .newTeam())
         playersCancellable = playersPublisher(in: database)
-            .scan(nil) { (previousList: PlayerList?, players: [Player] ) in
+            .scan(nil) { (previousList: PlayerList?, players: [Player], teams: [Team] ) in
                 if previousList == nil {
                     // Do not animate first view update
-                    return PlayerList(players: players, animatedChanges: false)
+                    return PlayerList(players: players, teams: teams, animatedChanges: false)
                 } else {
-                    return PlayerList(players: players, animatedChanges: true)
+                    return PlayerList(players: players, teams:teams, animatedChanges: true)
                 }
             }
             .compactMap { $0 }
@@ -92,8 +93,8 @@ final class PlayerListViewModel: ObservableObject {
     // MARK: - Player Edition
     
     /// Returns a view model suitable for editing a player.
-    func formViewModel(for player: Player) -> PlayerFormViewModel {
-        PlayerFormViewModel(database: database, player: player)
+    func formViewModel(for player: Player, for team: Team) -> PlayerFormViewModel {
+        PlayerFormViewModel(database: database, player: player, team: team)
     }
     
     // MARK: - Private

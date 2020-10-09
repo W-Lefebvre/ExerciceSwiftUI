@@ -1,5 +1,6 @@
 import SwiftUI
 
+
 /// The list of players
 struct PlayerList: View {
     /// Manages the list of players
@@ -7,6 +8,7 @@ struct PlayerList: View {
     
     /// Controls the presentation of the player creation sheet.
     @State private var newPlayerIsPresented = false
+    
     
     var body: some View {
         NavigationView {
@@ -24,11 +26,11 @@ struct PlayerList: View {
         }
     }
     
-    private var playerList: some View {
+     var playerList: some View {
         List {
             ForEach(viewModel.playerList.players) { player in
                 NavigationLink(destination: self.editionView(for: player)) {
-                    PlayerRow(player: player)
+                        PlayerRow(player: player)
                         .animation(nil)
                 }
             }
@@ -123,14 +125,12 @@ struct PlayerList: View {
 
 struct PlayerRow: View {
     var player: Player
-    
     var body: some View {
         HStack {
             Text(player.name)
             Spacer()
             Text("\(player.score) points").foregroundColor(.gray)
             Spacer()
-            Text(player.teamName)
         }
     }
 }
